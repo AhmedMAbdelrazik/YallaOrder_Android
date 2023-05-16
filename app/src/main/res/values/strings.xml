@@ -1,0 +1,36 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="google_cloud_server_client_id">708372035188-ifij3dfonq348q4l75hnqnnvdn79901o.apps.googleusercontent.com</string>
+    <string name="api_key">AIzaSyCPwmBQRoiDcVR37zxvvGgBr7EbhYm8nQo</string>
+    <string name="app_name">Yalla Order</string>
+    <string name="make_order">هنعمل آوردر</string>
+    <string name="save">وفر</string>
+    <string name="your_time">وقتك</string>
+    <string name="order_with_us">و اطلب معانا</string>
+    <string name="lets_go">يلا بينا</string>
+    <string name="enter_mobile_number">دخل رقم موبيلك</string>
+    <string name="enter_mobile_number_here">اكتب رقم موبايلك هنا</string>
+    <string name="please_enter_mobile_number">من فضلك اكتب رقم موبايلك</string>
+    <string name="please_enter_valid_mobile_number">من فضلك اكتب رقم موبايل صحيح</string>
+    <string name="welcome">أهلا يا</string>
+    <string name="today">النهاردة</string>
+    <string name="order_from">هنطلب من</string>
+    <string name="my_orders">طلباتى</string>
+    <string name="restaurants">المطاعم</string>
+    <string name="select_for_me">اختر لى</string>
+    <string name="select_from_menu">يلا اختار من المنيو اللى انت عايزه</string>
+    <string name="egp">جنيه</string>
+    <string name="version">اصدار</string>
+    <string name="total_price">اجمالى المبلغ</string>
+    <string name="plus_delivery_service"> خدمة التوصيل +</string>
+    <string name="confirm">تاكيد</string>
+    <string name="wait_for_order">خلاص طلبنا الاوردر.استنى شوية</string>
+    <string name="order_arrived">الاوردر وصل</string>
+    <string name="collect_order">بنجمع وهنطلب خلاص</string>
+    <string name="confused_press_here">محتار تطلب من فين دوس هنا</string>
+    <string name="press_here" >دوس هنا</string>
+    <string name="ok_will_order">تمام كده هنطلب من</string>
+    <string name="no_orders_found">مافيش اوردرات قديمة</string>
+    <string name="default_notification_channel_id">YallaOrderApp</string>
+    <string name="search">ابحث</string>
+
+</resources>

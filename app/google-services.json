@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "708372035188",
+    "project_id": "yallaorderappandroid",
+    "storage_bucket": "yallaorderappandroid.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:708372035188:android:fbe6e9674aa17274b68321",
+        "android_client_info": {
+          "package_name": "com.isoft.yallaorder"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "708372035188-1856po16lsvodjgmof568ksb5m6t0ke8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.isoft.yallaorder",
+            "certificate_hash": "4b048a7fc754bb6944901a94697e727134a00bda"
+          }
+        },
+        {
+          "client_id": "708372035188-makedof9ue8ba5d2mcbu9u274hi9j899.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyTDtakUJ4zSSgQh6yJ7LDIBs5Ib7K2v8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "708372035188-makedof9ue8ba5d2mcbu9u274hi9j899.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
