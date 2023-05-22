@@ -396,7 +396,7 @@ fun HomeScreen(){
                         .padding(5.dp))
             }
         }
-        if(getSheetDataState.status == Constants.STATUS_PENDING && getSheetDataState.menuList!=null && !isOrderConfirmed) {
+        if(getSheetDataState.status == Constants.STATUS_PENDING && getSheetDataState.menuList!=null) {
             Text(
                 modifier = Modifier
                     .constrainAs(selectFromMenuText) {
@@ -509,7 +509,6 @@ fun HomeScreen(){
                         end.linkTo(parent.end, 10.dp)
                     },
                 text = when (getSheetDataState.status) {
-                    Constants.STATUS_PENDING -> stringResource(id = R.string.collect_order)
                     Constants.STATUS_ORDERED -> stringResource(id = R.string.wait_for_order)
                     Constants.STATUS_DELIVERED -> stringResource(id = R.string.order_arrived)
                     else -> ""
@@ -519,6 +518,7 @@ fun HomeScreen(){
                 fontSize = 20.sp
             )
 
+            val orderStatusSize = if(getSheetDataState.status == Constants.STATUS_ORDERED || getSheetDataState.status == Constants.STATUS_DELIVERED) 500.dp else 200.dp
                 Image(
                     modifier = Modifier
                         .constrainAs(orderStatusImage) {
@@ -527,13 +527,12 @@ fun HomeScreen(){
                             end.linkTo(parent.end, 10.dp)
                             bottom.linkTo(parent.bottom)
                         }
-                        .width(500.dp)
-                        .height(500.dp),
+                        .width(orderStatusSize)
+                        .height(orderStatusSize),
                     painter = rememberAsyncImagePainter(
                         when (getSheetDataState.status) {
                             Constants.STATUS_ORDERED -> R.drawable.delivery_man
                             Constants.STATUS_DELIVERED -> R.drawable.order_ready_status
-                            Constants.STATUS_PENDING -> R.drawable.order_calling_status
                             else -> R.drawable.loading
                         },
                         imageLoader
@@ -700,7 +699,9 @@ fun HomeScreen(){
                 }
             )
         ) {
-            BottomPopupMyOrders()
+            BottomPopupMyOrders(){
+
+            }
         }
 
         BackHandler(enabled = true) {
@@ -899,7 +900,7 @@ fun ActionItem(
           name,
           image,
           backgroundBox,
-          myOrdersNumberText
+          myOrdersNotification
       ) = createRefs()
 
       Box(modifier = Modifier
@@ -938,25 +939,17 @@ fun ActionItem(
       )
 
       if(isOrderConfirmed && action.name == stringResource(id = R.string.my_orders)){
-          Text(
+          Image(
               modifier = Modifier
-                  .constrainAs(myOrdersNumberText) {
+                  .constrainAs(myOrdersNotification) {
                       top.linkTo(backgroundBox.top)
                       bottom.linkTo(backgroundBox.top)
                       start.linkTo(backgroundBox.start)
                       end.linkTo(backgroundBox.start)
-                  }
-                  .drawBehind {
-                      drawCircle(
-                          color = Orange,
-                          radius = 35f
-                      )
-                  }
-                  .padding(5.dp),
-              text = "1",
-              color = Color.Black,
-              fontFamily = bold,
-              fontSize = 12.sp
+                  }.width(25.dp)
+                  .height(25.dp),
+              painter = painterResource(id = R.drawable.ic_notification),
+              contentDescription = "myOrdersNotification"
           )
       }
   }

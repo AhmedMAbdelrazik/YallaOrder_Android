@@ -114,4 +114,15 @@ object Utils {
         return menuItems.filter { it.name.contains(query,true) }
     }
 
+    fun isEqualCurrentDate(date:String):Boolean{
+        val currentDate = getCurrentDate()
+        return date == currentDate
+    }
+
+    fun getCurrentDate():String{
+        return  java.text.SimpleDateFormat(
+            "dd-MM-yyyy", Locale("en")
+        ).format(Date())
+    }
+
 }

@@ -4,16 +4,21 @@ import android.os.Build
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -34,7 +39,7 @@ import com.isoft.yallaorder.ui.theme.*
 import java.util.*
 
 @Composable
-fun BottomPopupMyOrders(){
+fun BottomPopupMyOrders(onCancelButtonClick:(id:String)->Unit){
     var ordersList:List<Order>? by remember {
         mutableStateOf(null)
     }
@@ -90,7 +95,7 @@ fun BottomPopupMyOrders(){
                     .fillMaxWidth()
             ) {
                 items(ordersList!!) {order->
-                    OrderItem(order = order)
+                    OrderItem(order = order,onCancelButtonClick)
                 }
             }
         }else{
@@ -116,7 +121,7 @@ fun BottomPopupMyOrders(){
 }
 
 @Composable
-fun OrderItem(order: Order){
+fun OrderItem(order: Order,onCancelButtonClick: (id: String) -> Unit){
     val imageLoader = ImageLoader.Builder(LocalContext.current)
         .components {
             if (Build.VERSION.SDK_INT >= 28) {
@@ -133,18 +138,21 @@ fun OrderItem(order: Order){
             .padding(start = 16.dp, end = 16.dp, bottom = 16.dp, top = 16.dp)
     ) {
         val (
-            backgroundBox,
+            topBackgroundBox,
+            bottomBackgroundBox,
             pendingImage,
             restaurantName,
             date,
             totalPriceText,
             egpText,
             menuItemsList,
-            divider
+            divider,
+            cancelButton
         ) = createRefs()
+
         Box(
             modifier = Modifier
-                .constrainAs(backgroundBox) {
+                .constrainAs(topBackgroundBox) {
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                     top.linkTo(restaurantName.top)
@@ -154,6 +162,21 @@ fun OrderItem(order: Order){
                 }
                 .background(SplashBackgroundAlpha, RoundedCornerShape(topStart = 30f, topEnd = 30f))
         )
+
+        Box(
+            modifier = Modifier
+                .constrainAs(bottomBackgroundBox) {
+                    start.linkTo(menuItemsList.start)
+                    end.linkTo(menuItemsList.end)
+                    top.linkTo(menuItemsList.top)
+                    if(order.status==Constants.STATUS_PENDING) bottom.linkTo(cancelButton.bottom) else bottom.linkTo(menuItemsList.bottom)
+                    width = Dimension.fillToConstraints
+                    height = Dimension.fillToConstraints
+                }
+                .background(Color.White, RoundedCornerShape(topStart = 30f, topEnd = 30f))
+                .border(1.dp, SplashBackgroundAlpha, RoundedCornerShape(10.dp))
+        )
+
         Text(
             modifier = Modifier
                 .constrainAs(restaurantName) {
@@ -194,6 +217,32 @@ fun OrderItem(order: Order){
                 ),
                 contentDescription = "pending"
             )
+
+            Button(
+                modifier = Modifier
+                    .constrainAs(cancelButton){
+                        top.linkTo(menuItemsList.bottom,20.dp)
+                        start.linkTo(parent.start,40.dp)
+                        end.linkTo(parent.end,40.dp)
+                        width = Dimension.fillToConstraints
+                    }
+                    .padding(top = 20.dp, start = 16.dp, end = 16.dp, bottom = 16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = Color.Red
+                ),
+                onClick = {
+                    onCancelButtonClick.invoke(order.menuItems[0].id)
+                },
+                shape = RoundedCornerShape(25.dp)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.cancel),
+                    color = Color.White,
+                    textAlign = TextAlign.Center,
+                    fontFamily = extraBold,
+                    fontSize = 16.sp
+                )
+            }
         }
         Text(
             modifier = Modifier
@@ -223,8 +272,9 @@ fun OrderItem(order: Order){
         Column(
             modifier = Modifier
                 .constrainAs(menuItemsList){
-                    top.linkTo(backgroundBox.bottom,10.dp)
+                    top.linkTo(topBackgroundBox.bottom, (-8).dp)
                 }
+                .padding(10.dp)
         ) {
             (0 until order.menuItems.size).forEach { index->
                 MenuItem(menuItemData = order.menuItems.valueAt(index))
@@ -236,15 +286,15 @@ fun OrderItem(order: Order){
                 }
             }
         }
-        Divider(
-            modifier = Modifier
-                .constrainAs(divider){
-                    top.linkTo(menuItemsList.bottom,8.dp)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                },
-            color = SplashBackground
-        )
+//        Divider(
+//            modifier = Modifier
+//                .constrainAs(divider){
+//                    top.linkTo(menuItemsList.bottom,8.dp)
+//                    start.linkTo(parent.start)
+//                    end.linkTo(parent.end)
+//                },
+//            color = SplashBackground
+//        )
     }
 }
 

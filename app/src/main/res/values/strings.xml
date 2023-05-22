@@ -32,5 +32,6 @@
     <string name="no_orders_found">مافيش اوردرات قديمة</string>
     <string name="default_notification_channel_id">YallaOrderApp</string>
     <string name="search">ابحث</string>
+    <string name="cancel">الغاء</string>
 
 </resources>
