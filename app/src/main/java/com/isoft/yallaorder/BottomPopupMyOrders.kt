@@ -40,19 +40,7 @@ import com.isoft.yallaorder.ui.theme.*
 import java.util.*
 
 @Composable
-fun BottomPopupMyOrders(onCancelButtonClick:(id:String)->Unit){
-    var ordersList:List<Order>? by remember {
-        mutableStateOf(null)
-    }
-    val orderDao = OrderRoomDatabase.getInstance(LocalContext.current.applicationContext).orderDao()
-    LaunchedEffect(key1 = "orders") {
-        val orders = arrayListOf<Order>()
-        val ordersNo = orderDao.getOrdersNo()
-        for (orderNo in ordersNo) {
-            orders.add(Utils.convertOrderTablesToOrder(orderDao.getOrders(orderNo)))
-        }
-        ordersList = orders
-    }
+fun BottomPopupMyOrders(ordersList:List<Order>?,onCancelButtonClick:(id:String)->Unit){
     ConstraintLayout(modifier = Modifier
         .fillMaxSize()
         .background(TransparentGray)
@@ -298,7 +286,7 @@ fun OrderItem(order: Order,onCancelButtonClick: (id: String) -> Unit){
 //        )
     }
     if(openCancelOrderDialog){
-        ShowAlertDialog(R.string.cancel_order_message,{
+        CustomAlertDialog(R.string.cancel_order_message,{
            openCancelOrderDialog = false
            onCancelButtonClick.invoke(order.orderNumber)
         },{
@@ -306,6 +294,7 @@ fun OrderItem(order: Order,onCancelButtonClick: (id: String) -> Unit){
         })
     }
 }
+
 
 @Composable
 fun MenuItem(menuItemData: MenuItemData){

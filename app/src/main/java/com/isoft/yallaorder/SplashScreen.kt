@@ -94,7 +94,7 @@ fun SplashScreen(
                     .padding(top = 32.dp)
                     .align(Alignment.CenterHorizontally),
                 painter = rememberAsyncImagePainter(
-                    R.drawable.splash_loading, imageLoader
+                    R.drawable.loading, imageLoader
                 ),
                 contentDescription = "loading"
             )

@@ -126,8 +126,26 @@ fun HomeScreen(){
         mutableStateOf(false)
     }
 
+    var ordersNotificationCount by remember {
+        mutableStateOf(0)
+    }
+    LaunchedEffect(key1 = "getPendingOrdersNumber", block = {
+        ordersNotificationCount = orderDao.getPendingOrdersIds(Constants.STATUS_PENDING).size
+    })
+
+    var ordersList:List<Order>? by remember {
+        mutableStateOf(null)
+    }
+
     val textState = remember { mutableStateOf(TextFieldValue("")) }
 
+    var isShowLoadingDialog by remember {
+        mutableStateOf(false)
+    }
+
+    if(isShowLoadingDialog){
+        LoadingDialog()
+    }
 
     val localContext = LocalContext.current
 
@@ -208,7 +226,7 @@ fun HomeScreen(){
                     width = Dimension.fillToConstraints
                     height = Dimension.fillToConstraints
                 }
-                .clip(RoundedCornerShape(0.dp,0.dp,15.dp,15.dp))
+                .clip(RoundedCornerShape(0.dp, 0.dp, 15.dp, 15.dp))
                 .background(SplashBackground),
         )
 
@@ -360,7 +378,7 @@ fun HomeScreen(){
             }
         ) {
             items(actions){
-                ActionItem(action = it,isOrderConfirmed){name->
+                ActionItem(action = it,isOrderConfirmed,ordersNotificationCount){name->
                     when (name) {
                         localContext.getString(R.string.restaurants) -> {
                             if(!isShowBottomPopupProfile &&
@@ -534,7 +552,7 @@ fun HomeScreen(){
                         when (getSheetDataState.status) {
                             Constants.STATUS_ORDERED -> R.drawable.delivery_man
                             Constants.STATUS_DELIVERED -> R.drawable.order_ready_status
-                            else -> R.drawable.loading
+                            else -> R.drawable.home_loading
                         },
                         imageLoader
                     ),
@@ -635,9 +653,8 @@ fun HomeScreen(){
             )
         ) {
             BottomPopupCart(order = order!!){
-                isShowBottomPopupCart = false
-                cartNumber = 0
                 CoroutineScope(Dispatchers.IO).launch {
+                    isShowLoadingDialog = true
                     userStore.saveIsOrderConfirmed(true)
                     val googleSheetPostDataAndOrderTables = Utils.convertOrderToGoogleSheetPostDataAndOrderTables(order!!,user!!,getSheetDataState.selectedRestaurant!!)
 
@@ -645,9 +662,17 @@ fun HomeScreen(){
                         apiClient.api.submitSheet(Constants.ORDERS_RANGE_VALUE,Constants.RAW_VALUE,Constants.INSERT_ROWS_VALUE,Constants.BEARER_VALUE+" "+user!!.accessToken!!,
                             googleSheetPostDataAndOrderTables.googleSheetPostData)
                         orderDao.addOrders(googleSheetPostDataAndOrderTables.orderTables)
+                        ordersNotificationCount = orderDao.getPendingOrdersIds(Constants.STATUS_PENDING).size
+                        if(ordersNotificationCount == 0){
+                            userStore.saveIsOrderConfirmed(false)
+                        }
+                        isShowBottomPopupCart = false
+                        cartNumber = 0
+                        isShowLoadingDialog = false
                     }catch (e:Exception){
                         if(e is HttpException) {
                             if (e.code() == Constants.UN_AUTHORIZED_CODE) {
+                                isShowLoadingDialog=true
                                 userStore.saveAccessToken(
                                     Utils.getToken(
                                         localContext.applicationContext,
@@ -657,13 +682,16 @@ fun HomeScreen(){
                                         Constants.GET_TOKEN_SCOPE
                                     )
                                 )
-                                apiClient.api.submitSheet(
-                                    Constants.ORDERS_RANGE_VALUE,
-                                    Constants.RAW_VALUE,
-                                    Constants.INSERT_ROWS_VALUE,
-                                    Constants.BEARER_VALUE + " " + user!!.accessToken!!,
-                                    googleSheetPostDataAndOrderTables.googleSheetPostData
-                                )
+                                apiClient.api.submitSheet(Constants.ORDERS_RANGE_VALUE,Constants.RAW_VALUE,Constants.INSERT_ROWS_VALUE,Constants.BEARER_VALUE+" "+user!!.accessToken!!,
+                                    googleSheetPostDataAndOrderTables.googleSheetPostData)
+                                orderDao.addOrders(googleSheetPostDataAndOrderTables.orderTables)
+                                ordersNotificationCount = orderDao.getPendingOrdersIds(Constants.STATUS_PENDING).size
+                                if(ordersNotificationCount == 0){
+                                    userStore.saveIsOrderConfirmed(false)
+                                }
+                                isShowBottomPopupCart = false
+                                cartNumber = 0
+                                isShowLoadingDialog = false
                             }
                         }
                     }
@@ -700,9 +728,20 @@ fun HomeScreen(){
                 }
             )
         ) {
-            BottomPopupMyOrders{
+            LaunchedEffect(key1 = "orders") {
+                isShowLoadingDialog = true
+                val orders = arrayListOf<Order>()
+                val ordersNo = orderDao.getOrdersNo()
+                for (orderNo in ordersNo) {
+                    orders.add(Utils.convertOrderTablesToOrder(orderDao.getOrders(orderNo)))
+                }
+                ordersList = orders
+                isShowLoadingDialog = false
+            }
+            BottomPopupMyOrders(ordersList){
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
+                        isShowLoadingDialog = true
                         val getSheetGetData = apiClient.api.readSheet(Constants.ALL_ORDERS_RANGE_VALUE,
                             Constants.ROWS_VALUE,userStore.getAccessToken())
                         val ordersRanges = Utils.getSelectedOrderRanges(getSheetGetData,it)
@@ -716,14 +755,22 @@ fun HomeScreen(){
                             ordersRanges.second)
                         }
                         orderDao.deleteOrder(it)
-                        if(orderDao.getPendingOrdersNumber(Constants.STATUS_PENDING) == 0){
+                        ordersNotificationCount = orderDao.getPendingOrdersIds(Constants.STATUS_PENDING).size
+                        if(ordersNotificationCount == 0){
                             userStore.saveIsOrderConfirmed(false)
                         }
-                        isShowBottomPopupMyOrders = false
+                            val orders = arrayListOf<Order>()
+                            val ordersNo = orderDao.getOrdersNo()
+                            for (orderNo in ordersNo) {
+                                orders.add(Utils.convertOrderTablesToOrder(orderDao.getOrders(orderNo)))
+                            }
+                            ordersList = orders
+                        isShowLoadingDialog = false
                     }catch (e:Exception){
                         Log.i("error",e.localizedMessage)
                         if(e is HttpException) {
                             if (e.code() == Constants.UN_AUTHORIZED_CODE) {
+                                isShowLoadingDialog = true
                                 userStore.saveAccessToken(
                                     Utils.getToken(
                                         localContext.applicationContext,
@@ -745,9 +792,18 @@ fun HomeScreen(){
                                         "${Constants.BEARER_VALUE} ${userStore.getAccessToken()}",
                                         ordersRanges.second)
                                 }
-                                orderDao.deleteOrder(it)
-                                isShowBottomPopupMyOrders = false
-                            }
+                                ordersNotificationCount = orderDao.getPendingOrdersIds(Constants.STATUS_PENDING).size
+                                if(ordersNotificationCount == 0){
+                                    userStore.saveIsOrderConfirmed(false)
+                                }
+                                    val orders = arrayListOf<Order>()
+                                    val ordersNo = orderDao.getOrdersNo()
+                                    for (orderNo in ordersNo) {
+                                        orders.add(Utils.convertOrderTablesToOrder(orderDao.getOrders(orderNo)))
+                                    }
+                                    ordersList = orders
+                                isShowLoadingDialog = false
+                                }
                         }
                     }
                 }
@@ -935,6 +991,7 @@ fun MenuItemPreview(){
 fun ActionItem(
     action:Action,
     isOrderConfirmed:Boolean,
+    ordersNotificationCount:Int,
     onCLick:(name:String)->Unit,
 ){
   ConstraintLayout(modifier = Modifier
@@ -989,17 +1046,25 @@ fun ActionItem(
       )
 
       if(isOrderConfirmed && action.name == stringResource(id = R.string.my_orders)){
-          Image(
+          Text(
               modifier = Modifier
                   .constrainAs(myOrdersNotification) {
                       top.linkTo(backgroundBox.top)
                       bottom.linkTo(backgroundBox.top)
                       start.linkTo(backgroundBox.start)
                       end.linkTo(backgroundBox.start)
-                  }.width(25.dp)
-                  .height(25.dp),
-              painter = painterResource(id = R.drawable.ic_notification),
-              contentDescription = "myOrdersNotification"
+                  }
+                  .drawBehind {
+                      drawCircle(
+                          color = Color.Red,
+                          radius = 35f
+                      )
+                  }
+                  .padding(5.dp),
+              text = if(ordersNotificationCount!=0)ordersNotificationCount.toString() else "",
+              color = Color.White,
+              fontFamily = bold,
+              fontSize = 12.sp
           )
       }
   }
@@ -1008,7 +1073,7 @@ fun ActionItem(
 @Composable
 @Preview
 fun ActionItemPreview(){
-    ActionItem(action = Action("طلباتى", painterResource(id = R.drawable.my_orders_bg)),true){
+    ActionItem(action = Action("طلباتى", painterResource(id = R.drawable.my_orders_bg)),true,5){
 
     }
 }

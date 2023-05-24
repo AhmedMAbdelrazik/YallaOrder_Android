@@ -27,10 +27,10 @@ interface OrderDao {
 //    @Query("DELETE FROM OrderTable WHERE orderNo IN (:orderNumbers)")
 //    suspend fun deleteOrders(orderNumbers:List<String>)
 //
-//    @Query("SELECT DISTINCT orderNo from OrderTable WHERE orderStatus =:status")
-//    suspend fun getPendingOrdersIds(status:String):List<String>
+    @Query("SELECT DISTINCT orderNo from OrderTable WHERE orderStatus =:status")
+    suspend fun getPendingOrdersIds(status:String):List<String>
 
-    @Query("SELECT COUNT(*) FROM OrderTable WHERE orderStatus =:status")
+    @Query("SELECT DISTINCT COUNT(orderNo) FROM OrderTable WHERE orderStatus =:status")
     suspend fun getPendingOrdersNumber(status:String):Int
 
 }
