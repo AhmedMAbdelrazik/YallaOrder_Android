@@ -33,5 +33,10 @@
     <string name="default_notification_channel_id">YallaOrderApp</string>
     <string name="search">ابحث</string>
     <string name="cancel">الغاء</string>
+    <string name="order_already_canceled">تم الغاء الطلب بالفعل</string>
+    <string name="cancel_order_message">هل تريد الغاء هذا الطلب؟</string>
+    <string name="yes">نعم</string>
+    <string name="no">لا</string>
+    <string name="have_pending_orders">لديك طلبات سابقة هل تريد الغاء تلك الطلبات؟</string>
 
 </resources>

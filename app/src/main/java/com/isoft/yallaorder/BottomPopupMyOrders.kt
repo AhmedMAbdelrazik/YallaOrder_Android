@@ -2,6 +2,7 @@ package com.isoft.yallaorder
 
 import android.os.Build
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -131,7 +132,7 @@ fun OrderItem(order: Order,onCancelButtonClick: (id: String) -> Unit){
             }
         }
         .build()
-
+    var openCancelOrderDialog by remember { mutableStateOf(false)  }
     ConstraintLayout(
         modifier = Modifier
             .fillMaxWidth()
@@ -231,7 +232,7 @@ fun OrderItem(order: Order,onCancelButtonClick: (id: String) -> Unit){
                     backgroundColor = Color.Red
                 ),
                 onClick = {
-                    onCancelButtonClick.invoke(order.menuItems[0].id)
+                    openCancelOrderDialog = true
                 },
                 shape = RoundedCornerShape(25.dp)
             ) {
@@ -295,6 +296,14 @@ fun OrderItem(order: Order,onCancelButtonClick: (id: String) -> Unit){
 //                },
 //            color = SplashBackground
 //        )
+    }
+    if(openCancelOrderDialog){
+        ShowAlertDialog(R.string.cancel_order_message,{
+           openCancelOrderDialog = false
+           onCancelButtonClick.invoke(order.orderNumber)
+        },{
+            openCancelOrderDialog = false
+        })
     }
 }
 

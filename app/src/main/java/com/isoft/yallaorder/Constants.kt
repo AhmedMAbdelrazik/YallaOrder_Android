@@ -3,6 +3,7 @@ package com.isoft.yallaorder
 import com.google.android.gms.common.Scopes
 
 object Constants {
+    const val EMPTY =""
     const val BASE_URL = "https://sheets.googleapis.com/v4/spreadsheets/"
     const val RESTURANTS_RANGE_VALUE = "Restaurants!A2:G"
     const val RANGES_KEY = "ranges"
@@ -10,8 +11,12 @@ object Constants {
     const val ROWS_VALUE = "ROWS"
     const val RESTURANTS_ID_RANGE_VALUE = "RestaurantID_"
     const val A2_G_RANGE = "!A2:G"
+    const val VALID="Valid"
+    const val REMOVED = "Removed"
     const val ORDER_STATUS_RANGE_VALUE="OrderStatus!A2:C"
-    const val ORDERS_RANGE_VALUE = "Orders!A2:I2"
+    const val ALL_ORDERS_RANGE_VALUE = "Orders!A2:J"
+    const val ORDERS = "Orders!"
+    const val ORDERS_RANGE_VALUE = "Orders!A2:J2"
     const val BEARER_VALUE = "Bearer"
     const val ERROR_MESSAGE_KEY = "errorMessage"
     const val STATUS_PENDING = "Pending"

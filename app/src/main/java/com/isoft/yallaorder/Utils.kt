@@ -81,6 +81,7 @@ object Utils {
             orderArray.add(date)
             orderArray.add(user.mobileNumber!!)
             orderArray.add(user.fullName)
+            orderArray.add(Constants.VALID)
             values.add(orderArray)
 
         }
@@ -104,7 +105,7 @@ object Utils {
             totalPrice+=orderTable.orderCount.toInt() * orderTable.menuItemPrice
             menuItems.put(orderTable.id, MenuItemData(orderTable.id.toString(),"",orderTable.menuItemName,orderTable.menuItemPrice,orderTable.orderCount.toInt()))
         }
-        return Order(menuItems, totalPrice,orderTables[0].orderTime,orderTables[0].restaurantName,orderTables[0].orderStatus)
+        return Order(menuItems, totalPrice,orderTables[0].orderTime,orderTables[0].restaurantName,orderTables[0].orderStatus,orderTables[0].orderNo)
     }
 
     fun filterMenuItems(menuItems:List<MenuItemData>,query:String):List<MenuItemData>{
@@ -123,6 +124,28 @@ object Utils {
         return  java.text.SimpleDateFormat(
             "dd-MM-yyyy", Locale("en")
         ).format(Date())
+    }
+
+    fun getSelectedOrderRanges(googleSheetGetData: GoogleSheetGetData,orderId:String): Pair<String, GoogleSheetPostData>? {
+        Log.i("orderId",orderId)
+        val rangesNumbersList = ArrayList<Int>()
+        for (i in 0 until googleSheetGetData.valueRanges[0].values.size){
+            if(googleSheetGetData.valueRanges[0].values[i][0]==orderId){
+                rangesNumbersList.add(i+2)
+            }
+        }
+        if(rangesNumbersList.isNotEmpty()) {
+            val ordersRanges = "${Constants.ORDERS}J${rangesNumbersList[0]}:J${rangesNumbersList.last()}"
+            Log.i("range",ordersRanges)
+            val values = ArrayList<ArrayList<String>>()
+            for (i in 0 until rangesNumbersList.size){
+                val valueArray = ArrayList<String>()
+                valueArray.add(Constants.REMOVED)
+                values.add(valueArray)
+            }
+            return Pair(ordersRanges, GoogleSheetPostData(values))
+        }
+        return null
     }
 
 }

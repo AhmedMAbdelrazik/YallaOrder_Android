@@ -7,6 +7,7 @@ import android.content.IntentFilter
 import android.os.Build
 import android.util.Log
 import android.util.SparseArray
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideIn
@@ -699,8 +700,57 @@ fun HomeScreen(){
                 }
             )
         ) {
-            BottomPopupMyOrders(){
-
+            BottomPopupMyOrders{
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        val getSheetGetData = apiClient.api.readSheet(Constants.ALL_ORDERS_RANGE_VALUE,
+                            Constants.ROWS_VALUE,userStore.getAccessToken())
+                        val ordersRanges = Utils.getSelectedOrderRanges(getSheetGetData,it)
+                        if(ordersRanges==null){
+                            (localContext as MainActivity).runOnUiThread {
+                                Toast.makeText(localContext,R.string.order_already_canceled,Toast.LENGTH_LONG).show()
+                            }
+                        }else{
+                            apiClient.api.updateSheet(ordersRanges.first,Constants.RAW_VALUE,
+                            "${Constants.BEARER_VALUE} ${userStore.getAccessToken()}",
+                            ordersRanges.second)
+                        }
+                        orderDao.deleteOrder(it)
+                        if(orderDao.getPendingOrdersNumber(Constants.STATUS_PENDING) == 0){
+                            userStore.saveIsOrderConfirmed(false)
+                        }
+                        isShowBottomPopupMyOrders = false
+                    }catch (e:Exception){
+                        Log.i("error",e.localizedMessage)
+                        if(e is HttpException) {
+                            if (e.code() == Constants.UN_AUTHORIZED_CODE) {
+                                userStore.saveAccessToken(
+                                    Utils.getToken(
+                                        localContext.applicationContext,
+                                        userStore.getAccessToken(),
+                                        userStore.getAccountName(),
+                                        userStore.getAccountType(),
+                                        Constants.GET_TOKEN_SCOPE
+                                    )
+                                )
+                                val getSheetGetData = apiClient.api.readSheet(Constants.ALL_ORDERS_RANGE_VALUE,
+                                    Constants.ROWS_VALUE,userStore.getAccessToken())
+                                val ordersRanges = Utils.getSelectedOrderRanges(getSheetGetData,it)
+                                if(ordersRanges==null){
+                                    (localContext as MainActivity).runOnUiThread {
+                                        Toast.makeText(localContext,R.string.order_already_canceled,Toast.LENGTH_LONG).show()
+                                    }
+                                }else{
+                                    apiClient.api.updateSheet(ordersRanges.first,Constants.ROWS_VALUE,
+                                        "${Constants.BEARER_VALUE} ${userStore.getAccessToken()}",
+                                        ordersRanges.second)
+                                }
+                                orderDao.deleteOrder(it)
+                                isShowBottomPopupMyOrders = false
+                            }
+                        }
+                    }
+                }
             }
         }
 
