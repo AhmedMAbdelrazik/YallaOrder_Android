@@ -171,3 +171,59 @@ fun CustomAlertDialog(messageRes:Int,onConfirmClicked:()->Unit,onDismissClicked:
         }
     }
 }
+
+
+@Composable
+fun ErrorDialog(messageRes:Int,onConfirmClicked:()->Unit){
+    Dialog(
+        onDismissRequest = {  },
+        DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+    ) {
+        Box(
+            contentAlignment= Alignment.Center,
+            modifier = Modifier
+                .width(300.dp)
+                .background(LightGray, shape = RoundedCornerShape(8.dp))
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Image(
+                    painter = painterResource(id = R.drawable.error_image),
+                    contentDescription = "errorImage",
+                    modifier = Modifier
+                        .width(100.dp)
+                        .height(100.dp),
+
+                    )
+                Spacer(modifier = Modifier.height(20.dp))
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(id = messageRes),
+                    fontFamily = bold,
+                    color = Color.Black,
+                    fontSize = 16.sp,
+                    textAlign = TextAlign.Center
+                )
+                Button(
+                    modifier = Modifier
+                        .padding(start = 20.dp, end = 20.dp, top = 20.dp)
+                        .fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = SplashBackground
+                    ),
+                    onClick = onConfirmClicked,
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.ok),
+                        color = Color.White,
+                        textAlign = TextAlign.Center,
+                        fontFamily = extraBold,
+                        fontSize = 16.sp
+                    )
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+            }
+        }
+    }
+}

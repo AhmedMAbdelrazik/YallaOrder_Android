@@ -1,7 +1,9 @@
 package com.isoft.yallaorder
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
@@ -16,6 +18,7 @@ import com.isoft.yallaorder.ui.theme.YallaOrderTheme
 
 
 class MainActivity : ComponentActivity() {
+    var backPressedCount = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -23,6 +26,16 @@ class MainActivity : ComponentActivity() {
                SplashScreen(googleSignInClient = getGoogleLoginAuth())
             }
         }
+        onBackPressedDispatcher.addCallback(this,object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if(backPressedCount==0){
+                    Toast.makeText(this@MainActivity,R.string.press_back_again, Toast.LENGTH_LONG).show()
+                    backPressedCount++
+                }else {
+                    finish()
+                }
+            }
+        })
     }
     private fun getGoogleLoginAuth(): GoogleSignInClient {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -34,6 +47,7 @@ class MainActivity : ComponentActivity() {
             .build()
         return GoogleSignIn.getClient(this, gso)
     }
+
 }
 
 

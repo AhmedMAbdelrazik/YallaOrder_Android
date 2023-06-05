@@ -55,6 +55,17 @@ object Utils {
         return restaurantsList
     }
 
+    fun getOrderExpiryDateTime(googleSheetGetData: GoogleSheetGetData):Long{
+        val date = googleSheetGetData.valueRanges[0].values[0][1]
+            return java.text.SimpleDateFormat(
+                "MMM/dd/yyyy", Locale("en")
+            ).parse(date)?.time ?: 0L
+    }
+
+    fun isOrderExpired(expireDate:Long,currentDate:Long):Boolean{
+        return expireDate < currentDate
+    }
+
     fun convertOrderToGoogleSheetPostDataAndOrderTables(order:Order,user: User,restaurant: Restaurant):GoogleSheetPostDataAndOrderTables{
         val values = ArrayList<ArrayList<String>>()
         val orderTables = ArrayList<OrderTable>()
@@ -81,9 +92,9 @@ object Utils {
             orderArray.add(date)
             orderArray.add(user.mobileNumber!!)
             orderArray.add(user.fullName)
-            orderArray.add(Constants.VALID)
+            orderArray.add(BuildConfig.VERSION_NAME)
+            orderArray.add("")
             values.add(orderArray)
-
         }
         return GoogleSheetPostDataAndOrderTables(GoogleSheetPostData(values),orderTables)
     }
@@ -135,7 +146,7 @@ object Utils {
             }
         }
         if(rangesNumbersList.isNotEmpty()) {
-            val ordersRanges = "${Constants.ORDERS}J${rangesNumbersList[0]}:J${rangesNumbersList.last()}"
+            val ordersRanges = "${Constants.ORDERS}K${rangesNumbersList[0]}:K${rangesNumbersList.last()}"
             Log.i("range",ordersRanges)
             val values = ArrayList<ArrayList<String>>()
             for (i in 0 until rangesNumbersList.size){

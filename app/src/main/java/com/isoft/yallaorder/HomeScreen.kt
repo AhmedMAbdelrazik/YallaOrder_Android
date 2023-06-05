@@ -37,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
@@ -143,11 +144,59 @@ fun HomeScreen(){
         mutableStateOf(false)
     }
 
+    var isShowErrorDialog by remember {
+        mutableStateOf(false)
+    }
+
     if(isShowLoadingDialog){
         LoadingDialog()
     }
 
+    if(isShowErrorDialog){
+        ErrorDialog(messageRes = R.string.try_again) {
+            isShowErrorDialog = false
+        }
+    }
+
     val localContext = LocalContext.current
+    LaunchedEffect(key1 = "getOrderExpiryDate") {
+        try {
+            val getSheetData = apiClient.api.readSheet(
+                Constants.ALL_SETTINGS_RANGE_VALUE,
+                Constants.ROWS_VALUE, userStore.getAccessToken()
+            )
+            val expiryDate = Utils.getOrderExpiryDateTime(getSheetData)
+            if (Utils.isOrderExpired(expiryDate, Date().time)) {
+                userStore.saveIsOrderConfirmed(false)
+                orderDao.updateAllOrdersToStatus(Constants.STATUS_DELIVERED)
+            }
+        } catch (e: Exception) {
+            if (e is HttpException) {
+                if (e.code() == Constants.UN_AUTHORIZED_CODE) {
+                    isShowLoadingDialog = true
+                    userStore.saveAccessToken(
+                        Utils.getToken(
+                            localContext.applicationContext,
+                            userStore.getAccessToken(),
+                            userStore.getAccountName(),
+                            userStore.getAccountType(),
+                            Constants.GET_TOKEN_SCOPE
+                        )
+                    )
+                    val getSheetData = apiClient.api.readSheet(
+                        Constants.ALL_SETTINGS_RANGE_VALUE,
+                        Constants.ROWS_VALUE, userStore.getAccessToken()
+                    )
+                    val expiryDate = Utils.getOrderExpiryDateTime(getSheetData)
+                    if (Utils.isOrderExpired(expiryDate, Date().time)) {
+                        userStore.saveIsOrderConfirmed(false)
+                        orderDao.updateAllOrdersToStatus(Constants.STATUS_DELIVERED)
+                    }
+                }
+            }
+        }
+    }
+
 
     val broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         // we will receive data updates in onReceive method.
@@ -212,7 +261,8 @@ fun HomeScreen(){
         val (
             orderStatusText,
             orderFrom,
-            searchBar
+            searchBar,
+            versionNumber
         ) = createRefs()
 
 
@@ -453,7 +503,7 @@ fun HomeScreen(){
                 modifier = Modifier
                 .constrainAs(menuList) {
                     top.linkTo(searchBar.bottom, 16.dp)
-                    bottom.linkTo(parent.bottom)
+                    bottom.linkTo(versionNumber.top,10.dp)
                     start.linkTo(parent.start, 10.dp)
                     end.linkTo(parent.end, 10.dp)
                     width = Dimension.fillToConstraints
@@ -513,7 +563,7 @@ fun HomeScreen(){
                             top.linkTo(orderStatusText.bottom, 10.dp)
                             start.linkTo(parent.start, 10.dp)
                             end.linkTo(parent.end, 10.dp)
-                            bottom.linkTo(parent.bottom)
+                            bottom.linkTo(versionNumber.top)
                         },
                     painter = painterResource(id = R.drawable.villa_bg),
                     contentDescription = "villa_bg"
@@ -544,7 +594,7 @@ fun HomeScreen(){
                             top.linkTo(orderStatusText.bottom, 10.dp)
                             start.linkTo(parent.start, 10.dp)
                             end.linkTo(parent.end, 10.dp)
-                            bottom.linkTo(parent.bottom)
+                            bottom.linkTo(versionNumber.top)
                         }
                         .width(orderStatusSize)
                         .height(orderStatusSize),
@@ -559,6 +609,21 @@ fun HomeScreen(){
                     contentDescription = "order_status"
                 )
         }
+
+        Text(
+            text = stringResource(id = R.string.version_no) +" "+BuildConfig.VERSION_NAME,
+            modifier = Modifier
+                .constrainAs(versionNumber) {
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                    bottom.linkTo(parent.bottom, 5.dp)
+                }
+                .fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            fontFamily = bold,
+            color=Color.Black,
+            fontSize = 12.sp
+        )
 
         if(cartNumber>0){
             IconButton(
@@ -655,9 +720,7 @@ fun HomeScreen(){
             BottomPopupCart(order = order!!){
                 CoroutineScope(Dispatchers.IO).launch {
                     isShowLoadingDialog = true
-                    userStore.saveIsOrderConfirmed(true)
                     val googleSheetPostDataAndOrderTables = Utils.convertOrderToGoogleSheetPostDataAndOrderTables(order!!,user!!,getSheetDataState.selectedRestaurant!!)
-
                     try {
                         apiClient.api.submitSheet(Constants.ORDERS_RANGE_VALUE,Constants.RAW_VALUE,Constants.INSERT_ROWS_VALUE,Constants.BEARER_VALUE+" "+user!!.accessToken!!,
                             googleSheetPostDataAndOrderTables.googleSheetPostData)
@@ -665,11 +728,14 @@ fun HomeScreen(){
                         ordersNotificationCount = orderDao.getPendingOrdersIds(Constants.STATUS_PENDING).size
                         if(ordersNotificationCount == 0){
                             userStore.saveIsOrderConfirmed(false)
+                        }else{
+                            userStore.saveIsOrderConfirmed(true)
                         }
                         isShowBottomPopupCart = false
                         cartNumber = 0
                         isShowLoadingDialog = false
                     }catch (e:Exception){
+                        Log.i("error",e.localizedMessage)
                         if(e is HttpException) {
                             if (e.code() == Constants.UN_AUTHORIZED_CODE) {
                                 isShowLoadingDialog=true
@@ -688,11 +754,19 @@ fun HomeScreen(){
                                 ordersNotificationCount = orderDao.getPendingOrdersIds(Constants.STATUS_PENDING).size
                                 if(ordersNotificationCount == 0){
                                     userStore.saveIsOrderConfirmed(false)
+                                }else{
+                                    userStore.saveIsOrderConfirmed(true)
                                 }
                                 isShowBottomPopupCart = false
                                 cartNumber = 0
                                 isShowLoadingDialog = false
+                            }else{
+                                isShowLoadingDialog = false
+                                isShowErrorDialog = true
                             }
+                        }else{
+                            isShowLoadingDialog = false
+                            isShowErrorDialog = true
                         }
                     }
                 }
@@ -803,13 +877,21 @@ fun HomeScreen(){
                                     }
                                     ordersList = orders
                                 isShowLoadingDialog = false
+                                }else{
+                                    isShowLoadingDialog = false
+                                    isShowErrorDialog = true
                                 }
+                        }else{
+                            isShowLoadingDialog = false
+                            isShowErrorDialog = true
                         }
                     }
                 }
             }
         }
-
+        var backCounter by remember {
+            mutableStateOf(0)
+        }
         BackHandler(enabled = true) {
             if(isShowBottomPopupProfile) {
                 isShowBottomPopupProfile = false
@@ -822,7 +904,12 @@ fun HomeScreen(){
             }else if(isShowBottomPopupMyOrders){
                 isShowBottomPopupMyOrders = false
             }else{
-                (localContext as MainActivity).finish()
+                if(backCounter==0){
+                    Toast.makeText(localContext,R.string.press_back_again,Toast.LENGTH_LONG).show()
+                    backCounter++
+                }else {
+                    (localContext as MainActivity).finish()
+                }
             }
         }
     }
