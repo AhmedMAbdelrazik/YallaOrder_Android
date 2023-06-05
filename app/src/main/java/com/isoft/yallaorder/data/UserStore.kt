@@ -42,6 +42,14 @@ class UserStore(private val context: Context) {
         }
     }
 
+    suspend fun isUserLoggedIn():Boolean{
+        var isLoggedIn = false
+        context.dataStore.data.map { preferences ->
+           isLoggedIn =  preferences[FULL_NAME_KEY]!=null
+        }.first()
+        return isLoggedIn
+    }
+
     suspend fun saveUser(user: User) {
         context.dataStore.edit { preferences ->
             preferences[FULL_NAME_KEY] = user.fullName

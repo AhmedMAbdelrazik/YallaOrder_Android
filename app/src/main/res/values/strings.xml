@@ -34,9 +34,11 @@
     <string name="search">ابحث</string>
     <string name="cancel">الغاء</string>
     <string name="order_already_canceled">تم الغاء الطلب بالفعل</string>
-    <string name="cancel_order_message">هل تريد الغاء هذا الطلب؟</string>
+    <string name="cancel_order_message">الطلب هيتلغى \n نلغى ولا هتفكر تانى</string>
     <string name="yes">نعم</string>
     <string name="no">لا</string>
+    <string name="think">لا هفكر</string>
+    <string name="delete_order">الغي الاوردر</string>
     <string name="have_pending_orders">لديك طلبات سابقة هل تريد الغاء تلك الطلبات؟</string>
 
 </resources>

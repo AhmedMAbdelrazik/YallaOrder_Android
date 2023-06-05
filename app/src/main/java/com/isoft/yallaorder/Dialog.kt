@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -26,10 +27,7 @@ import coil.ImageLoader
 import coil.compose.rememberAsyncImagePainter
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
-import com.isoft.yallaorder.ui.theme.SplashBackground
-import com.isoft.yallaorder.ui.theme.SplashBackgroundAlpha
-import com.isoft.yallaorder.ui.theme.bold
-import com.isoft.yallaorder.ui.theme.extraBold
+import com.isoft.yallaorder.ui.theme.*
 
 @Composable
 fun ShowAlertDialog(messageRes:Int,onConfirmClicked:()->Unit,onDismissClicked:()->Unit){
@@ -111,15 +109,24 @@ fun CustomAlertDialog(messageRes:Int,onConfirmClicked:()->Unit,onDismissClicked:
             contentAlignment= Alignment.Center,
             modifier = Modifier
                 .width(300.dp)
-                .background(White, shape = RoundedCornerShape(8.dp))
+                .background(LightGray, shape = RoundedCornerShape(8.dp))
         ) {
-            Column {
-                Spacer(modifier = Modifier.height(16.dp))
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Image(
+                    painter = painterResource(id = R.drawable.delete_order_image),
+                    contentDescription = "deleteOrderImage",
+                    modifier = Modifier
+                        .width(100.dp)
+                        .height(100.dp),
+
+                )
+                Spacer(modifier = Modifier.height(20.dp))
                 Text(
                     modifier = Modifier.fillMaxWidth(),
                     text = stringResource(id = messageRes),
-                    fontFamily = extraBold,
-                    color = SplashBackground,
+                    fontFamily = bold,
+                    color = Color.Black,
                     fontSize = 16.sp,
                     textAlign = TextAlign.Center
                 )
@@ -128,13 +135,13 @@ fun CustomAlertDialog(messageRes:Int,onConfirmClicked:()->Unit,onDismissClicked:
                         .padding(start = 20.dp, end = 20.dp, top = 20.dp)
                         .fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
-                        backgroundColor = Color.Red
+                        backgroundColor = SplashBackground
                     ),
-                    onClick = onConfirmClicked,
-                    shape = RoundedCornerShape(25.dp)
+                    onClick = onDismissClicked,
+                    shape = RoundedCornerShape(16.dp)
                 ) {
                     Text(
-                        text = stringResource(id = R.string.yes),
+                        text = stringResource(id = R.string.think),
                         color = Color.White,
                         textAlign = TextAlign.Center,
                         fontFamily = extraBold,
@@ -143,23 +150,23 @@ fun CustomAlertDialog(messageRes:Int,onConfirmClicked:()->Unit,onDismissClicked:
                 }
                 Button(
                     modifier = Modifier
-                        .padding(start = 20.dp, end = 20.dp, top = 20.dp)
+                        .padding(start = 20.dp, end = 20.dp, top = 16.dp)
                         .fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
-                        backgroundColor = SplashBackgroundAlpha
+                        backgroundColor = Color.Red
                     ),
-                    onClick = onDismissClicked,
-                    shape = RoundedCornerShape(25.dp)
+                    onClick = onConfirmClicked,
+                    shape = RoundedCornerShape(16.dp)
                 ) {
                     Text(
-                        text = stringResource(id = R.string.no),
-                        color = Color.Black,
+                        text = stringResource(id = R.string.delete_order),
+                        color = White,
                         textAlign = TextAlign.Center,
                         fontFamily = extraBold,
                         fontSize = 16.sp
                     )
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
         }
         }
     }
